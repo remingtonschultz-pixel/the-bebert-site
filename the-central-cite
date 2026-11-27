@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Central Site</title>
+
+    <!-- Browser Tab Icon (Favicon) -->
+    <link rel="icon" type="image/x-icon" href="images/Icon.ico">
+
+    <!-- Google Fonts: Bebas Neue for tall bold title, Inter for modern clean text -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        /* Dark grey background and centered layout */
+        body {
+            background-color: #1e1e1e;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 20px;
+            overflow-x: hidden;
+        }
+
+        /* Tall, white, bold title */
+        h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(3.5rem, 10vw, 7rem);
+            letter-spacing: 4px;
+            color: #ffffff;
+            margin: 0 0 40px 0;
+            text-align: center;
+            line-height: 0.95;
+            max-width: 100%;
+        }
+
+        /* Container for the image grid */
+        .image-container {
+            display: flex;
+            gap: clamp(16px, 2.5vw, 32px);
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            max-width: 1200px;
+            padding: 12px;
+        }
+
+        /* Card wrapper link with outline and hover effects */
+        .image-card {
+            display: block;
+            position: relative;
+            width: min(350px, 28vw);
+            min-width: 200px;
+            aspect-ratio: 1 / 1;
+            border-radius: 20px;
+            overflow: hidden; /* Keeps image corners rounded */
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* Expand card slightly and brighten outline on hover */
+        .image-card:hover {
+            transform: scale(1.06);
+            border-color: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Base image styling */
+        .image-card img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.3s ease;
+        }
+
+        /* Hover image hidden by default */
+        .image-card .hover-img {
+            opacity: 0;
+        }
+
+        /* Image swap on hover */
+        .image-card:hover .default-img {
+            opacity: 0;
+        }
+
+        .image-card:hover .hover-img {
+            opacity: 1;
+        }
+
+        /* --- Question Mark Button --- */
+        .info-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.65);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            font-family: 'Inter', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            opacity: 0; /* Hidden by default */
+            transition: opacity 0.3s ease, background 0.2s ease, transform 0.2s ease;
+            backdrop-filter: blur(4px);
+        }
+
+        /* Reveal question mark button when hovering over the card */
+        .image-card:hover .info-btn {
+            opacity: 1;
+        }
+
+        /* Question mark button hover effect */
+        .info-btn:hover {
+            background: #ffffff;
+            color: #1e1e1e;
+            transform: scale(1.15);
+        }
+
+        /* --- Modal Popup Window --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        /* Show modal */
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: #2a2a2a;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 650px;
+            width: 100%;
+            position: relative;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+
+        /* Close X button */
+        .close-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: transparent;
+            border: none;
+            color: #aaaaaa;
+            font-size: 28px;
+            cursor: pointer;
+            line-height: 1;
+            transition: color 0.2s ease;
+        }
+
+        .close-btn:hover {
+            color: #ffffff;
+        }
+
+        /* Body layout inside modal (Text on Left, Image on Right) */
+        .modal-body {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .modal-text {
+            flex: 1;
+        }
+
+        .modal-text h2 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.5rem;
+            letter-spacing: 2px;
+            margin: 0 0 12px 0;
+            color: #ffffff;
+            line-height: 1;
+        }
+
+        .modal-text p {
+            margin: 0;
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #cccccc;
+        }
+
+        .modal-image-wrap {
+            flex: 0 0 180px;
+            width: 180px;
+            height: 180px;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-image-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Responsive adjustment for small phone screens */
+        @media (max-width: 550px) {
+            .modal-body {
+                flex-direction: column-reverse;
+                text-align: center;
+            }
+
+            .modal-image-wrap {
+                flex: none;
+                width: 140px;
+                height: 140px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>The Central Site</h1>
+
+    <div class="image-container">
+        <!-- ROW 1 -->
+        <!-- Card 1 -->
+        <a href="https://blaster1741.github.io/Games/Spelunky%20Classic/" class="image-card">
+            <button class="info-btn" aria-label="More Info" onclick="openModal(event, 'Spelunky Classic', 'You may have seen Spelunky mentioned somewhere and asked yourself ``What is Spelunky?`` Spelunky is a platformer with lots of monsters, items, traps, and secrets. Dying in Spelunky can be quick and painful. But each time you restart, you`ll play a new, randomly-generated set of levels! It will feel fresh and exciting, and you`ll have to think on your feet. You can pick up and use or toss practically everything you come across (to your own detriment, if you`re not careful! There`s a lot of freedom to how you want to navigate the levels, which are fully-destructible. And even though they`re randomized, you will still get more skilled over time! If you play enough, not only will you get good enough to beat the game, but you may start to unravel some of its deepest secrets...). - Mossmouth, Spelunky World', 'images/SpelunkyClassic.gif')">?</button>
+            <img src="images/SpelunkyClassic.png" alt="Spelunky Classic" class="default-img">
+            <img src="images/SpelunkyClassic.gif" alt="Spelunky Classic Hover" class="hover-img">
+        </a>
+
+        <!-- Card 2 -->
+        <a href="https://blaster1741.github.io/Games/Granule/index.html" class="image-card">
+            <button class="info-btn" aria-label="More Info" onclick="openModal(event, 'Granule', 'Granule is a physics sandbox built around a ragdoll who won`t stay dead. Break, bleed, burn, and dismember him with a growing set of tools, powers, and more. - Tevark, Granule on Steam', 'images/Granule.gif')">?</button>
+            <img src="images/Granule.png" alt="Granule" class="default-img">
+            <img src="images/Granule.gif" alt="Granule Hover" class="hover-img">
+        </a>
+
+        <!-- Card 3 -->
+        <a href="https://blaster1741.github.io/Games/people%20playground/index.html" class="image-card">
+            <button class="info-btn" aria-label="More Info" onclick="openModal(event, 'people playground.', 'Shoot, stab, burn, poison, tear, vaporise, or crush ragdolls. This game is for people who enjoy throwing around ragdolls but want it to be more detailed, satisfying, and feel more free while doing so. Ragdolls are simple on the outside but detailed on the inside. You can siphon their blood and replace it with nitroglycerine. You can submerge their head and cause brain damage by asphyxiation. Think of something horrible, and you can probably do it in People Playground. Afterwards, you could even hook them up to an ECG and blood supply to try to get them back on their feet. - mestiez, people playground. on Steam', 'images/peopleplayground.gif')">?</button>
+            <img src="images/peopleplayground.png" alt="people playground" class="default-img">
+            <img src="images/peopleplayground.gif" alt="people playground Hover" class="hover-img">
+        </a>
+
+        <!-- ROW 2 -->
+        <!-- Card 4 -->
+        <a href="https://blaster1741.github.io/Games/Minecraft/index.html" class="image-card">
+            <button class="info-btn" aria-label="More Info" onclick="openModal(event, 'Minecraft 1.26.2 - Chaos Cubed', 'Discover the world of Minecraft: Build anything you can imagine, uncover eerie mysteries, and survive the night in the ultimate sandbox adventure game. In Minecraft, every playthrough is different, and unforgettable adventures await behind every corner. Explore and craft your way through an infinite world that’s yours to shape, one block at a time. - Mojang, Minecraft.net', 'images/Minecraft.gif')">?</button>
+            <img src="images/Minecraft.png" alt="Game 4" class="default-img">
+            <img src="images/Minecraft.gif" alt="Game 4 Hover" class="hover-img">
+        </a>
+
+        <!-- Card 5 -->
+        <a href="https://blaster1741.github.io/Games/The Binding of Isaac/index.html" class="image-card">
+            <button class="info-btn" aria-label="More Info" onclick="openModal(event, 'The Binding of Isaac: Repentance Plus - Beta', 'PRAY FOR REPENTANCE AND BE REBORN Experience the modern classic, The Binding of Isaac, like you`ve never seen it before. It`s a game too big to be called a sequel: Repentance takes Isaac to new heights of roguelike dungeon adventure, as the brave boy descends into the basement for his greatest challenge yet! Isaac`s new quest takes him to unknown places he`s never been, filled with horrible new enemies and bosses, weapon combos you`ve never synergized before and items he`s never seen... unholy terrors from his wildest dreams and worst nightmares! - Nicalis, Inc., Edmund McMillen, The Binding of Isaac: Repentance on Steam', 'images/TBOI.gif')">?</button>
+            <img src="images/TBOI.png" alt="Game 5" class="default-img">
+            <img src="images/TBOI.gif" alt="Game 5 Hover" class="hover-img">
+        </a>
+
+        <!-- Card 6 -->
+        <a href="https://blaster1741.github.io/Games/Stardew Valley/index.html" class="image-card">
+            <button class="info-btn" aria-label="More Info" onclick="openModal(event, 'Stardew Valley - 1.6.15', 'You`ve inherited your grandfather`s old farm plot in Stardew Valley. Armed with hand-me-down tools and a few coins, you set out to begin your new life. Can you learn to live off the land and turn these overgrown fields into a thriving home? It won`t be easy. Ever since Joja Corporation came to town, the old ways of life have all but disappeared. The community center, once the town`s most vibrant hub of activity, now lies in shambles. But the valley seems full of opportunity. With a little dedication, you might just be the one to restore Stardew Valley to greatness! - ConcernedApe, Stardew Valley on Steam', 'images/Stardew Valley.gif')">?</button>
+            <img src="images/Stardew Valley.png" alt="Game 6" class="default-img">
+            <img src="images/Stardew Valley.gif" alt="Game 6 Hover" class="hover-img">
+        </a>
+
+        <!-- ROW 3 -->
+        <!-- Card 7 -->
+        <a href="https://blaster1741.github.io/Games/FTL/index.html" class="image-card">
+            <button class="info-btn" aria-label="More Info" onclick="openModal(event, 'FTL demo', 'In FTL you experience the atmosphere of running a spaceship trying to save the galaxy. It`s a dangerous mission, with every encounter presenting a unique challenge with multiple solutions. What will you do if a heavy missile barrage shuts down your shields? Reroute all power to the engines in an attempt to escape, power up additional weapons to blow your enemy out of the sky, or take the fight to them with a boarding party? This ``spaceship simulation roguelike-like`` allows you to take your ship and crew on an adventure through a randomly generated galaxy filled with glory and bitter defeat. - Subset Games, Faster Than Light on Steam', 'images/FTL.gif')">?</button>
+            <img src="images/FTL.png" alt="Game 7" class="default-img">
+            <img src="images/FTL.gif" alt="Game 7 Hover" class="hover-img">
+        </a>
+
+        <!-- Card 8 -->
+        <a href="https://blaster1741.github.io/Games/Hollow Knight/index.html" class="image-card">
+            <button class="info-btn" aria-label="More Info" onclick="openModal(event, 'Hollow Knight', 'Beneath the fading town of Dirtmouth sleeps an ancient, ruined kingdom. Many are drawn below the surface, searching for riches, or glory, or answers to old secrets. Hollow Knight is a classically styled 2D action adventure across a vast interconnected world. Explore twisting caverns, ancient cities and deadly wastes; battle tainted creatures and befriend bizarre bugs; and solve ancient mysteries at the kingdom`s heart. - Team Cherry, Hollow Knight on Steam', 'images/Hollow Knight.gif')">?</button>
+            <img src="images/Hollow Knight.png" alt="Game 8" class="default-img">
+            <img src="images/Hollow Knight.gif" alt="Game 8 Hover" class="hover-img">
+        </a>
+
+        <!-- Card 9 -->
+        <a href="https://blaster1741.github.io/Games/Hollow Knight Silksong/index.html" class="image-card">
+            <button class="info-btn" aria-label="More Info" onclick="openModal(event, 'Hollow Knight: Silksong', 'As the lethal hunter Hornet, adventure through a kingdom ruled by silk and song! Captured and taken to this unfamiliar world, prepare to battle mighty foes and solve ancient mysteries as you ascend on a deadly pilgrimage to the kingdom`s peak. Hollow Knight: Silksong is the epic sequel to Hollow Knight, the award winning action-adventure. Journey to all-new lands, discover new powers, battle vast hordes of bugs and beasts and uncover secrets tied to your nature and your past.  - Team Cherry, Hollow Knight: Silksong on Steam', 'images/Hollow Knight Silksong.gif')">?</button>
+            <img src="images/Hollow Knight Silksong.png" alt="Game 9" class="default-img">
+            <img src="images/Hollow Knight Silksong.gif" alt="Game 9 Hover" class="hover-img">
+        </a>
+
+        <!-- ROW 4 -->
+        <!-- Card 10 -->
+        <a href="https://blaster1741.github.io/Games/Jetpack Joyride/index.html" class="image-card">
+            <button class="info-btn" aria-label="More Info" onclick="openModal(event, 'Jetpack Joyride', 'Strap on a bullet-powered jetpack! Relive your memories of Bullet-powered jetpacks! Giant mechanical dragons! Birds that shoot money! Equip cool jetpacks, suit up in stylish costumes and ride crazy vehicles in your endless running quest to beat the scientists to the end of the lab. - Halfbrick, halfbrick.com', 'images/Jetpack Joyride.gif')">?</button>
+            <img src="images/Jetpack Joyride.png" alt="Game 10" class="default-img">
+            <img src="images/Jetpack Joyride.gif" alt="Game 10 Hover" class="hover-img">
+        </a>
+
+        <!-- Card 11 -->
+        <a href="https://blaster1741.github.io/Games/Bad Piggies/index.html" class="image-card">
+            <button class="info-btn" aria-label="More Info" onclick="openModal(event, 'Bad Piggies', 'Create the ultimate flying device and pilot the pigs safely to the eggs! The Bad Piggies are after the eggs again - but as usual, nothing is going according to plan! Can you create the ultimate flying machine and steer them safely to their destination? Those tricky pigs have a few objects they can use, but they need your help to turn these into the perfect transportation! With more than 200 levels, and free updates coming up, you have hours and hours of pig-crashing, exploding, and flying fun! Get three stars to unlock over 40 more levels! HINT: Sometimes you need to play the level several times to achieve all the objectives - try building a new device or steering in a different way to earn all the stars! - Rovio, rovio.com', 'images/Bad Piggies.gif')">?</button>
+            <img src="images/Bad Piggies.png" alt="Game 11" class="default-img">
+            <img src="images/Bad Piggies.gif" alt="Game 11 Hover" class="hover-img">
+        </a>
+
+        <!-- Card 12 -->
+        <a href="https://blaster1741.github.io/Games/Fruit Ninja/index.html" class="image-card">
+            <button class="info-btn" aria-label="More Info" onclick="openModal(event, 'Fruit Ninja', 'Choose your blade, unleash your inner ninja! Slice fruit, don`t slice bombs - that`s all you need to know to get started with addictive Fruit Ninja action! - Halfbrick, halfbrick.com', 'images/Fruit Ninja.gif')">?</button>
+            <img src="images/Fruit Ninja.png" alt="Game 12" class="default-img">
+            <img src="images/Fruit Ninja.gif" alt="Game 12 Hover" class="hover-img">
+        </a>
+
+        <!-- ROW 5 -->
+        <!-- Card 13 -->
+        <a href="https://blaster1741.github.io/Games/Ski Safari/index.html" class="image-card">
+            <button class="info-btn" aria-label="More Info" onclick="openModal(event, 'Ski Safari', 'Welcome to Ski Safari! Ski Safari is where Animals, Avalanches and Action come together to create a new casual gameplay experience. Our deep sleeping hero has to stay ahead of a relentless avalanche that threatens the local mountainsides. Sven, as we like to call him, can use animals to aid his escape from an icey end. Each of the hillside animals have different attributes to make a speedier escape. Penguins glide further, Yetis are tougher, Eagles soar to great heights, each of these can provide useful advantage for Sven. Sometimes on the slopes Sven can find fast Snowmobiles which can ferry multiple animals a maintain a very high top speed. Staying ahead of the avalanche has its advantages and perks. Completing objectives can `level up` Sven  and increase his score multiplier. Riding animals, performing backflips add to the score and with an increased score multiplier Sven will rocketing up the highscore table with ease. - Defiant Development, Apple App Store', 'images/Ski Safari.gif')">?</button>
+            <img src="images/Ski Safari.png" alt="Game 13" class="default-img">
+            <img src="images/Ski Safari.gif" alt="Game 13 Hover" class="hover-img">
+        </a>
+
+        <!-- Card 14 -->
+        <a href="https://blaster1741.github.io/Games/Dig2China/index.html" class="image-card">
+            <button class="info-btn" aria-label="More Info" onclick="openModal(event, 'Dig 2 China', 'Dig through the center of the Earth in your backyard! Upgrade your digger and plunge through 13 layers of the Earth to prove that if you dig deep enough, you really will make it to the other side. And make it back in time for dinner! - Innersloth, innersloth.com', 'images/Dig2China.gif')">?</button>
+            <img src="images/Dig2China.png" alt="Game 14" class="default-img">
+            <img src="images/Dig2China.gif" alt="Game 14 Hover" class="hover-img">
+        </a>
+
+        <!-- Card 15 -->
+        <a href="https://blaster1741.github.io/Games/Meat Boy/index.html" class="image-card">
+            <button class="info-btn" aria-label="More Info" onclick="openModal(event, 'Meat Boy', 'Facts about the game -Meat boy is Hard! -You can skip levels by pressing esc and exiting to the level menu. -Unlock extra characters by collecting band aids. -You only need to beat 3 of every 5 levels to advance to the next series of levels. All the rest of the info is in game. That is all. - Team Mic (Jon & Edmund), armorgames.com', 'images/Meat Boy.gif')">?</button>
+            <img src="images/Meat Boy.png" alt="Game 15" class="default-img">
+            <img src="images/Meat Boy.gif" alt="Game 15 Hover" class="hover-img">
+        </a>
+
+        <!-- ROW 6 -->
+        <!-- Card 16 -->
+        <a href="https://blaster1741.github.io/Games/Football Bros/index.html" class="image-card">
+            <button class="info-btn" aria-label="More Info" onclick="openModal(event, 'Football Bros', 'Are you ready to transform from a rookie to a football legend? Football Bros offers an exhilarating American football experience that combines strategic thinking with fast-paced action. - Blue Wizard Digital, Official Site', 'images/Football Bros.gif')">?</button>
+            <img src="images/Football Bros.png" alt="Game 16" class="default-img">
+            <img src="images/Football Bros.gif" alt="Game 16 Hover" class="hover-img">
+        </a>
+
+        <!-- Card 17 -->
+        <a href="https://blaster1741.github.io/Games/The Henry Stickmin Collection/index.html" class="image-card">
+            <button class="info-btn" aria-label="More Info" onclick="openModal(event, 'The Henry Stickmin Collection', 'The Henry Stickmin Collection is a Newgrounds choose-your-own-path classic, reborn and revitalized. This 6-game epic culminates in multiple entirely canon, extremely different endings. Each step of the journey has you choose from options such as a Teleporter or calling in your buddy Charles to help you out. Correct choices will move the story forward, but incorrect choices lead to a fail. If you get to the end on your first try, you`re doing it wrong. Failing is half the fun. - PuffballsUnited, The Henry Stickmin Collection on Steam', 'images/The Henry Stickmin Collection.gif')">?</button>
+            <img src="images/The Henry Stickmin Collection.png" alt="Game 17" class="default-img">
+            <img src="images/The Henry Stickmin Collection.gif" alt="Game 17 Hover" class="hover-img">
+        </a>
+
+        <!-- Card 18 -->
+        <a href="https://blaster1741.github.io/Games/Evolution/index.html" class="image-card">
+            <button class="info-btn" aria-label="More Info" onclick="openModal(event, 'Evolution by Keiwan', 'Use joints, bones and muscles to build creatures that are only limited by your imagination. Watch how the combination of a neural network and a genetic algorithm can enable your creatures to ``learn`` and improve at their given tasks all on their own. - Keiwan, Evolution on itch.io', 'images/Evolution.gif')">?</button>
+            <img src="images/Evolution.png" alt="Game 18" class="default-img">
+            <img src="images/Evolution.gif" alt="Game 18 Hover" class="hover-img">
+        </a>
+
+        <!-- ROW 7 -->
+        <!-- Card 19 -->
+        <a href="https://blaster1741.github.io/Games/RimWorld/index.html" class="image-card">
+            <button class="info-btn" aria-label="More Info" onclick="openModal(event, 'RimWorld', 'RimWorld is a sci-fi colony sim driven by an intelligent AI storyteller. Inspired by Dwarf Fortress, Firefly, and Dune. You begin with three survivors of a shipwreck on a distant world. Manage colonists` moods, needs, wounds, illnesses and addictions. Build in the forest, desert, jungle, tundra, and more. Watch colonists develop and break relationships with family members, lovers, and spouses. Replace wounded limbs and organs with prosthetics, bionics, or biological parts harvested from others. Fight pirates, tribes, mad animals, giant insects and ancient killing machines. Craft structures, weapons, and apparel from metal, wood, stone, cloth, and futuristic materials. Tame and train cute pets, productive farm animals, and deadly attack beasts. Trade with passing ships and caravans. Form caravans to complete quests, trade, attack other factions, or migrate your whole colony. Dig through snow, weather storms, and fight fires. Capture refugees or prisoners and turn them to your side or sell them into slavery. Discover a new generated world each time you play. Explore hundreds of wild and interesting mods on the Steam Workshop. Learn to play easily with the help of an intelligent and unobtrusive AI tutor. - Ludeon Studios, RimWorld on Steam', 'images/Rim.gif')">?</button>
+            <img src="images/Rim.png" alt="Game 19" class="default-img">
+            <img src="images/Rim.gif" alt="Game 19 Hover" class="hover-img">
+        </a>
+
+        <!-- Card 20 -->
+        <a href="https://blaster1741.github.io/Games/Ages Of Conflict/index.html" class="image-card">
+            <button class="info-btn" aria-label="More Info" onclick="openModal(event, 'Ages of Conflict', 'AI Simulation with High Customization: In this game you observe customized AI nations battle it out to ultimately try to control the world in a massive free-for-all, featuring alliances, revolts, puppet states and all kinds of political twists! NOTE: This is not a Strategy Game. Extensive Map Creator + God Mode Tools: The game comes with premade Maps and Scenarios, but you can unleash your creativity by making your own! Make your maps and borders as complex as you like! Govern world history by controlling nations directly. Carefully edit borders, terrain, nation stats and AI behaviour at any point during the simulation! World Building: View the whole History of your simulations and Statistics to get a better view of past events and nations long gone. With the right settings, the world can continue to change for thousands of years. If you are interested in History, Geography, Map Painting or watching chaos unfold, Ages of Conflict has got you covered! - JoySpark Games, Ages of Conflict on Steam', 'images/Conflict.gif')">?</button>
+            <img src="images/Conflict.png" alt="Game 20" class="default-img">
+            <img src="images/Conflict.gif" alt="Game 20 Hover" class="hover-img">
+        </a>
+
+        <!-- Card 21 -->
+        <a href="https://blaster1741.github.io/Games/PVZ/index.html" class="image-card">
+            <button class="info-btn" aria-label="More Info" onclick="openModal(event, 'Plants vs. Zombies', 'Zombies are invading your home, and the only defense is your arsenal of plants! Armed with an alien nursery-worth of zombie-zapping plants like peashooters and cherry bombs, you`ll need to think fast and plant faster to stop dozens of types of zombies dead in their tracks. Obstacles like a setting sun, creeping fog and a swimming pool add to the challenge, and with five game modes to dig into, the fun never dies! - PopCap Games, Inc., Plants vs. Zombies GOTY Edition on Steam', 'images/PVZ.gif')">?</button>
+            <img src="images/PVZ.png" alt="Game 21" class="default-img">
+            <img src="images/PVZ.gif" alt="Game 21 Hover" class="hover-img">
+        </a>
+    </div>
+
+    <!-- Popup Modal Window -->
+    <div id="modalOverlay" class="modal-overlay" onclick="closeModalOnBackdrop(event)">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+            <div class="modal-body">
+                <div class="modal-text">
+                    <h2 id="modalTitle">TITLE</h2>
+                    <p id="modalDescription">Description goes here...</p>
+                </div>
+                <div class="modal-image-wrap">
+                    <img id="modalImg" src="" alt="Popup Preview Image">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalDescription = document.getElementById('modalDescription');
+        const modalImg = document.getElementById('modalImg');
+
+        // Function to open modal with specific content
+        function openModal(event, title, description, hoverImgSrc) {
+            // Stop link navigation and click event bubbling
+            event.preventDefault();
+            event.stopPropagation();
+
+            modalTitle.textContent = title;
+            modalDescription.textContent = description;
+            modalImg.src = hoverImgSrc;
+
+            modalOverlay.classList.add('active');
+        }
+
+        // Function to close modal
+        function closeModal() {
+            modalOverlay.classList.remove('active');
+        }
+
+        // Close modal when clicking outside the modal content box
+        function closeModalOnBackdrop(event) {
+            if (event.target === modalOverlay) {
+                closeModal();
+            }
+        }
+
+        // Close modal when pressing the Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+
+</body>
+</html>
+The bebert cite aka remi
